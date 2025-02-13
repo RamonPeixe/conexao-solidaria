@@ -1,12 +1,11 @@
-import '../../shared/styles/global.css'
+import AppRoutes from "../../shared/routes";
 
-function App() {
-
+const App = () => {
   return (
-    <>
-     <h1 className='text-red-500'>Teste</h1>
-    </>
-  )
-}
+    <div className="h-screen">
+      <AppRoutes />
+    </div>
+  );
+};
 
-export default App
+export default App;
