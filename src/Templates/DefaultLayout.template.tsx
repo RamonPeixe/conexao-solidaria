@@ -3,19 +3,17 @@ import CustomSidebar from "../presentation/components/Sidebar/Sidebar.component"
 
 const { Content } = Layout;
 
-const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const DefaultLayout: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
-    <Layout style={{ minHeight: "100vh", display: "flex", flexDirection: "row" }}>
-      {/* Sidebar com largura fixa */}
+    <div className="flex h-screen w-full overflow-hidden">
       <CustomSidebar />
 
-      {/* Área de conteúdo flexível */}
-      <Layout style={{ flex: 1 }}>
-        <Content style={{ padding: "20px", background: "#F4F4F4" }}>
-          {children}
-        </Content>
-      </Layout>
-    </Layout>
+      <div className="flex-grow p-5 bg-gray-100 overflow-y-auto">
+        <Content>{children}</Content>
+      </div>
+    </div>
   );
 };
 
