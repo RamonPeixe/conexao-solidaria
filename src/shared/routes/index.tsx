@@ -1,16 +1,18 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import DefaultLayout from "../../Templates/DefaultLayout.template";
+
 import Inicio from "../../presentation/pages/Inicio";
 import Instituicoes from "../../presentation/pages/Instituicoes";
 import Doacoes from "../../presentation/pages/Doacoes";
 import Perfil from "../../presentation/pages/Perfil/Index";
+import CachorroCarameloPage from "../../presentation/pages/Instituicoes/Instituicao";
 
 
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Redireciona "/" para "/inicio" automaticamente */}
       <Route path="/" element={<Navigate to="/inicio" />} />
+      
       <Route
         path="/inicio"
         element={
@@ -40,6 +42,15 @@ const AppRoutes = () => {
         element={
           <DefaultLayout>
             <Perfil />
+          </DefaultLayout>
+        }
+      />
+
+      <Route
+        path="/instituicoes/cachorro-caramelo"
+        element={
+          <DefaultLayout>
+            <CachorroCarameloPage />
           </DefaultLayout>
         }
       />
