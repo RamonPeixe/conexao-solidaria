@@ -1,7 +1,10 @@
-import { Button } from "antd";
+import { useState } from "react";
+import { Button, Drawer } from "antd";
 import { HandHeart } from "lucide-react";
 
 const Doacoes = () => {
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
   const doacoes = [
     {
       ong: "Casa do Amor",
@@ -77,6 +80,7 @@ const Doacoes = () => {
           className="!bg-[#7886C7] !border-[#7886C7] !text-white !font-bold
                      !flex !items-center !justify-center gap-2
                      hover:!bg-[#A9B5DF] hover:!border-[#A9B5DF]"
+          onClick={() => setDrawerVisible(true)}
         >
           <HandHeart size={16} />
           Cadastrar doação
@@ -109,6 +113,70 @@ const Doacoes = () => {
           </div>
         ))}
       </div>
+
+      <Drawer
+        title="Cadastrar Doação"
+        placement="right"
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              ONG
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
+              placeholder="Nome da ONG"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Data
+            </label>
+            <input
+              type="date"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Tipo de Doação
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
+              placeholder="Ex: Roupas de inverno, Pix R$ 80,00, etc."
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Comprovante
+            </label>
+            <label
+              htmlFor="comprovante"
+              className="mt-1 block w-full border-2 border-dashed border-gray-300 rounded px-3 py-6 text-center cursor-pointer text-gray-500 hover:bg-gray-100"
+            >
+              Clique para anexar o comprovante
+              <input
+                id="comprovante"
+                type="file"
+                className="hidden"
+                accept="image/*,application/pdf"
+              />
+            </label>
+          </div>
+          <div>
+            <Button
+              type="primary"
+              className="w-full !bg-[#7886C7] hover:!bg-[#A9B5DF] !font-bold"
+            >
+              Cadastrar
+            </Button>
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 };
