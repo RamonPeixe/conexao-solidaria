@@ -6,13 +6,15 @@ import Instituicoes from "../../presentation/pages/Instituicoes";
 import Doacoes from "../../presentation/pages/Doacoes";
 import Perfil from "../../presentation/pages/Perfil/Index";
 import CachorroCarameloPage from "../../presentation/pages/Instituicoes/Instituicao";
-
+import Login from "../../presentation/pages/Login/Index";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/inicio" />} />
-      
+
+      <Route path="/login" element={<Login />} />
+
       <Route
         path="/inicio"
         element={
@@ -45,7 +47,6 @@ const AppRoutes = () => {
           </DefaultLayout>
         }
       />
-
       <Route
         path="/instituicoes/cachorro-caramelo"
         element={
