@@ -16,7 +16,6 @@ const Login = () => {
   };
 
   const handleRecoverySubmit = () => {
-    // Implemente aqui a lógica para envio do email de recuperação
     console.log("Email de recuperação enviado para:", recoveryEmail);
     setIsRecoveryModalVisible(false);
   };
