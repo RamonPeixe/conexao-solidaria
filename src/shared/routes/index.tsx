@@ -5,7 +5,7 @@ import Inicio from "../../presentation/pages/Inicio";
 import Instituicoes from "../../presentation/pages/Instituicoes";
 import Doacoes from "../../presentation/pages/Doacoes";
 import Perfil from "../../presentation/pages/Perfil/Index";
-import CachorroCarameloPage from "../../presentation/pages/Instituicoes/Instituicao";
+import InstituicaoPage from "../../presentation/pages/Instituicoes/Instituicao";
 import Login from "../../presentation/pages/Login/Index";
 
 const AppRoutes = () => {
@@ -23,6 +23,7 @@ const AppRoutes = () => {
           </DefaultLayout>
         }
       />
+
       <Route
         path="/instituicoes"
         element={
@@ -32,6 +33,24 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/instituicoes/cadastro"
+        element={
+          <DefaultLayout>
+            <Instituicoes />
+          </DefaultLayout>
+        }
+      />
+
+      <Route
+        path="/instituicoes/:id"
+        element={
+          <DefaultLayout>
+            <InstituicaoPage />
+          </DefaultLayout>
+        }
+      />
+
+      <Route
         path="/doacoes"
         element={
           <DefaultLayout>
@@ -39,19 +58,12 @@ const AppRoutes = () => {
           </DefaultLayout>
         }
       />
+
       <Route
         path="/perfil"
         element={
           <DefaultLayout>
             <Perfil />
-          </DefaultLayout>
-        }
-      />
-      <Route
-        path="/instituicoes/cachorro-caramelo"
-        element={
-          <DefaultLayout>
-            <CachorroCarameloPage />
           </DefaultLayout>
         }
       />
