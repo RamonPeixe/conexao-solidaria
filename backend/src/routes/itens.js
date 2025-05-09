@@ -22,7 +22,6 @@ router.get('/', (req, res) => {
   }
 });
 
-// POST /itens
 router.post('/', (req, res) => {
   const { id_instituicao, descricao } = req.body;
   db.run(
@@ -35,7 +34,6 @@ router.post('/', (req, res) => {
   );
 });
 
-// PUT /itens/:id
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const { descricao } = req.body;
@@ -51,7 +49,6 @@ router.put('/:id', (req, res) => {
   );
 });
 
-// DELETE /itens/:id
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   db.run(

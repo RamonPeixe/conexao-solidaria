@@ -1,5 +1,3 @@
-// src/shared/routes/index.tsx
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import DefaultLayout from "../../Templates/DefaultLayout.template";
 
@@ -13,7 +11,7 @@ import Login from "../../presentation/pages/Login/Index";
 
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<Navigate to="/inicio" />} />
+    <Route path="/" element={<Navigate to="/login" />} />
     <Route path="/login" element={<Login />} />
 
     <Route
@@ -33,7 +31,6 @@ const AppRoutes = () => (
         </DefaultLayout>
       }
     />
-    {/* rota de cadastro separada */}
     <Route
       path="/instituicoes/cadastro"
       element={

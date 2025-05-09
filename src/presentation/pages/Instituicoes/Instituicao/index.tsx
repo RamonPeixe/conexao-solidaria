@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { Wallet, HandHeart } from "lucide-react";
+import Swal from "sweetalert2";
 import api from "../../../../services/api";
 import defaultImg from "../../../../shared/assets/imagemPadraoOng.png";
 import defaultQrPix from "../../../../shared/assets/qrcode-pix.png";
@@ -44,13 +45,80 @@ const InstituicaoPage = () => {
       .get<Instituicao>(`/instituicoes/${id}`)
       .then(res => setInstituicao(res.data))
       .catch(err => console.error("Erro ao carregar instituição:", err));
+
     api
       .get<Item[]>("/itens", { params: { id_instituicao: id } })
       .then(res => setItems(res.data))
       .catch(err => console.error("Erro ao carregar itens:", err));
   }, [id]);
 
-  if (!instituicao) return <div className="p-6 text-center">Carregando...</div>;
+  const handleWalletDonate = async () => {
+    if (!instituicao) return;
+
+    const result = await Swal.fire<string>({
+      title: `Doar para ${instituicao.nome}`,
+      input: "number",
+      inputLabel: "Quanto você quer doar (R$)?",
+      inputAttributes: { min: "1", step: "0.01" },
+      showCancelButton: true,
+      confirmButtonText: "Doar",
+      cancelButtonText: "Cancelar",
+      inputValidator: (val) => {
+        const n = Number(val);
+        if (!val || isNaN(n) || n <= 0) {
+          return "Informe um valor válido";
+        }
+      },
+    });
+
+    if (!result.isConfirmed || result.value == null) {
+      return;
+    }
+
+    const valor = Number(result.value);
+
+    const stored = localStorage.getItem("conexaoSolidariaUser");
+    if (!stored) {
+      await Swal.fire("Erro", "Você precisa estar logado.", "error");
+      return navigate("/login");
+    }
+    const user = JSON.parse(stored) as { id_usuario: number; saldo: number };
+
+    if (user.saldo < valor) {
+      return Swal.fire(
+        "Saldo insuficiente",
+        `Você tem R$ ${user.saldo.toFixed(2)} disponíveis.`,
+        "error"
+      );
+    }
+
+    try {
+      await api.post("/doacoes", {
+        id_usuario: user.id_usuario,
+        id_instituicao: instituicao.id_instituicao,
+        data: new Date().toISOString(),
+        tipo: `Depósito carteira R$ ${valor.toFixed(2)}`,
+        status: "Confirmada",
+        componentes: "",
+      });
+
+      const novoSaldo = user.saldo - valor;
+      localStorage.setItem(
+        "conexaoSolidariaUser",
+        JSON.stringify({ ...user, saldo: novoSaldo })
+      );
+
+      await Swal.fire("Sucesso", "Doação cadastrada com sucesso!", "success");
+      navigate("/doacoes");
+    } catch (err) {
+      console.error(err);
+      Swal.fire("Erro", "Não foi possível registrar a doação.", "error");
+    }
+  };
+
+  if (!instituicao) {
+    return <div className="p-6 text-center">Carregando...</div>;
+  }
 
   return (
     <div className="p-6 bg-white rounded shadow-md max-w-3xl mx-auto my-8">
@@ -89,17 +157,17 @@ const InstituicaoPage = () => {
           type="primary"
           size="middle"
           className="!bg-[#7886C7] !border-[#7886C7] !font-bold flex items-center gap-2 hover:!bg-[#A9B5DF]"
-          onClick={() => navigate('/doacoes')}
+          onClick={handleWalletDonate}
         >
-          <HandHeart size={16} /> Doar item
+          <Wallet size={16} /> Doar da carteira
         </Button>
         <Button
           type="primary"
           size="middle"
           className="!bg-[#7886C7] !border-[#7886C7] !font-bold flex items-center gap-2 hover:!bg-[#A9B5DF]"
-          onClick={() => navigate('/doacoes')}
+          onClick={() => navigate("/doacoes")}
         >
-          <Wallet size={16} /> Doar da carteira
+          <HandHeart size={16} /> Doar item
         </Button>
       </div>
     </div>
