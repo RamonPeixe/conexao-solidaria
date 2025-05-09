@@ -1,72 +1,85 @@
-import { useState } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { Button, Drawer } from "antd";
 import { HandHeart } from "lucide-react";
+import api from "../../../services/api";
+
+interface Instituicao {
+  id_instituicao: number;
+  nome: string;
+}
+
+interface Doacao {
+  id_doacao: number;
+  id_usuario: number;
+  id_instituicao: number;
+  data: string;
+  tipo: string;
+  status: string;
+  componentes: string;
+}
+
+interface DisplayDoacao extends Doacao {
+  ong: string;
+}
 
 const Doacoes = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
+  const [doacoes, setDoacoes] = useState<DisplayDoacao[]>([]);
 
-  const doacoes = [
-    {
-      ong: "Casa do Amor",
-      data: "15/11/2022",
-      tipo: "Roupas de inverno",
-      status: "Confirmada",
-    },
-    {
-      ong: "Lar Esperança",
-      data: "10/12/2022",
-      tipo: "Pix R$ 80,00",
-      status: "Confirmada",
-    },
-    {
-      ong: "Sorrisos Felizes",
-      data: "05/01/2023",
-      tipo: "Cobertores e mantas",
-      status: "Confirmada",
-    },
-    {
-      ong: "Cachorro Caramelo",
-      data: "14/02/2023",
-      tipo: "Ração para cães",
-      status: "Confirmada",
-    },
-    {
-      ong: "Mãos Unidas",
-      data: "22/03/2023",
-      tipo: "Pix R$ 100,00",
-      status: "Em análise",
-    },
-    {
-      ong: "Esperança Viva",
-      data: "10/04/2023",
-      tipo: "Medicamentos básicos",
-      status: "Confirmada",
-    },
-    {
-      ong: "Aconchego Fraterno",
-      data: "03/05/2023",
-      tipo: "Produtos de higiene",
-      status: "Confirmada",
-    },
-    {
-      ong: "Vida Nova",
-      data: "19/06/2023",
-      tipo: "Brinquedos",
-      status: "Confirmada",
-    },
-    {
-      ong: "Amigos Solidários",
-      data: "08/07/2023",
-      tipo: "Pix R$ 50,00",
-      status: "Em análise",
-    },
-    {
-      ong: "Coração Quente",
-      data: "25/08/2023",
-      tipo: "Alimentos não perecíveis",
-      status: "Confirmada",
-    },
-  ];
+  const [inputInstId, setInputInstId] = useState<number>(0);
+  const [inputData, setInputData] = useState<string>("");
+  const [inputTipo, setInputTipo] = useState<string>("");
+  const [inputComprovante, setInputComprovante] = useState<File | null>(null);
+
+  // Carrega instituições e doações
+  useEffect(() => {
+    Promise.all([
+      api.get<Instituicao[]>('/instituicoes'),
+      api.get<Doacao[]>('/doacoes')
+    ])
+      .then(([instRes, doacRes]) => {
+        const insts = instRes.data;
+        setInstituicoes(insts);
+        const display = doacRes.data.map(d => ({
+          ...d,
+          ong: insts.find(i => i.id_instituicao === d.id_instituicao)?.nome || 'Desconhecida'
+        }));
+        setDoacoes(display);
+      })
+      .catch(err => console.error('Erro ao buscar dados:', err));
+  }, []);
+
+  const fetchDoacoes = () => {
+    api.get<Doacao[]>('/doacoes')
+      .then(doacRes => {
+        const display = doacRes.data.map(d => ({
+          ...d,
+          ong: instituicoes.find(i => i.id_instituicao === d.id_instituicao)?.nome || 'Desconhecida'
+        }));
+        setDoacoes(display);
+      })
+      .catch(err => console.error('Erro ao buscar doações:', err));
+  };
+
+  const handleSubmit = () => {
+    api.post('/doacoes', {
+      id_usuario:     1,
+      id_instituicao: inputInstId,
+      tipo:           inputTipo,
+      status:         'Em análise',
+      componentes:    inputComprovante ? inputComprovante.name : ''
+    })
+      .then(() => {
+        setDrawerVisible(false);
+        setInputInstId(0);
+        setInputData('');
+        setInputTipo('');
+        setInputComprovante(null);
+        fetchDoacoes();
+      })
+      .catch(err => console.error('Erro ao cadastrar doação:', err));
+  };
 
   return (
     <div className="py-16 px-6 bg-gray-100 min-h-screen">
@@ -91,7 +104,7 @@ const Doacoes = () => {
         {doacoes.map((doacao, index) => (
           <div
             key={index}
-            className="bg-white rounded shadow-md p-4 
+            className="bg-white rounded shadow-md p-4
                        flex flex-col sm:flex-row sm:justify-between sm:items-center"
           >
             <div>
@@ -100,14 +113,10 @@ const Doacoes = () => {
               <p className="text-[#A9B5DF] text-sm">Tipo: {doacao.tipo}</p>
             </div>
             <div>
-              {doacao.status === "Confirmada" ? (
-                <span className="text-green-500 font-bold">
-                  {doacao.status}
-                </span>
+              {doacao.status === 'Confirmada' ? (
+                <span className="text-green-500 font-bold">{doacao.status}</span>
               ) : (
-                <span className="text-yellow-500 font-bold">
-                  {doacao.status}
-                </span>
+                <span className="text-yellow-500 font-bold">{doacao.status}</span>
               )}
             </div>
           </div>
@@ -122,38 +131,41 @@ const Doacoes = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              ONG
-            </label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium text-gray-700">ONG</label>
+            <select
+              value={inputInstId}
+              onChange={(e: ChangeEvent<HTMLSelectElement>) => setInputInstId(Number(e.target.value))}
               className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
-              placeholder="Nome da ONG"
-            />
+            >
+              <option value={0}>Selecione uma ONG</option>
+              {instituicoes.map(inst => (
+                <option key={inst.id_instituicao} value={inst.id_instituicao}>
+                  {inst.nome}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Data
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Data</label>
             <input
               type="date"
+              value={inputData}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setInputData(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Tipo de Doação
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Tipo de Doação</label>
             <input
               type="text"
+              value={inputTipo}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setInputTipo(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded px-3 py-2"
               placeholder="Ex: Roupas de inverno, Pix R$ 80,00, etc."
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Comprovante
-            </label>
+            <label className="block text-sm font-medium text-gray-700">Comprovante</label>
             <label
               htmlFor="comprovante"
               className="mt-1 block w-full border-2 border-dashed border-gray-300 rounded px-3 py-6 text-center cursor-pointer text-gray-500 hover:bg-gray-100"
@@ -163,6 +175,7 @@ const Doacoes = () => {
                 id="comprovante"
                 type="file"
                 className="hidden"
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setInputComprovante(e.target.files?.[0] || null)}
                 accept="image/*,application/pdf"
               />
             </label>
@@ -171,6 +184,7 @@ const Doacoes = () => {
             <Button
               type="primary"
               className="w-full !bg-[#7886C7] hover:!bg-[#A9B5DF] !font-bold"
+              onClick={handleSubmit}
             >
               Cadastrar
             </Button>
