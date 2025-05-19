@@ -20,7 +20,7 @@ const Login = () => {
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const navigate = useNavigate();
 
-  const toggleAccountCreation = () => setIsCreatingAccount(v => !v);
+  const toggleAccountCreation = () => setIsCreatingAccount((v) => !v);
   const handleForgotPassword = () => setIsRecoveryModalVisible(true);
   const handleRecoverySubmit = () => {
     message.success(`Email de recuperação enviado para: ${recoveryEmail}`);
@@ -28,12 +28,29 @@ const Login = () => {
   };
 
   const onFinish = async (values: LoginFormValues) => {
-    if (isCreatingAccount) {
-      // ... 
+     if (isCreatingAccount) {
+    try {
+      await api.post('/usuarios', {
+        nome: values.nome,
+        idade: values.idade,
+        endereco: values.endereco,
+        telefone: values.telefone,
+        cpf: values.cpf,
+        email: values.email,
+        senha: values.senha,
+        saldo: 0
+      });
+      message.success('Conta criada com sucesso!');
+      setIsCreatingAccount(false);
+      navigate('/login');
+    } catch (err) {
+      console.error('Erro ao criar conta:', err);
+      message.error('Falha ao criar conta. Tente novamente.');
+    }
     } else {
       try {
         const res = await api.get<LoginFormValues[]>("/usuarios");
-        const user = res.data.find(u => u.email === values.email);
+        const user = res.data.find((u) => u.email === values.email);
         if (!user) {
           message.error("Usuário não encontrado");
           return;
@@ -44,7 +61,7 @@ const Login = () => {
         }
         message.success("Login realizado com sucesso!");
         localStorage.setItem("conexaoSolidariaUser", JSON.stringify(user));
-        navigate("/doacoes");
+        navigate("/inicio");
       } catch (err) {
         console.error("Erro no login:", err);
         message.error("Falha ao fazer login. Tente novamente.");
@@ -69,6 +86,47 @@ const Login = () => {
         <Form<LoginFormValues> layout="vertical" onFinish={onFinish}>
           {isCreatingAccount && (
             <>
+              <Form.Item
+                label="Nome Completo"
+                name="nome"
+                rules={[
+                  { required: true, message: "Informe seu nome completo" },
+                ]}
+              >
+                <Input placeholder="Seu nome completo" />
+              </Form.Item>
+
+              <Form.Item
+                label="Idade"
+                name="idade"
+                rules={[{ required: true, message: "Informe sua idade" }]}
+              >
+                <Input type="number" placeholder="Ex: 28" />
+              </Form.Item>
+
+              <Form.Item
+                label="Endereço"
+                name="endereco"
+                rules={[{ required: true, message: "Informe seu endereço" }]}
+              >
+                <Input placeholder="Rua, número, bairro" />
+              </Form.Item>
+
+              <Form.Item
+                label="Telefone"
+                name="telefone"
+                rules={[{ required: true, message: "Informe seu telefone" }]}
+              >
+                <Input placeholder="(11) 98888-7777" />
+              </Form.Item>
+
+              <Form.Item
+                label="CPF"
+                name="cpf"
+                rules={[{ required: true, message: "Informe seu CPF" }]}
+              >
+                <Input placeholder="123.456.789-01" />
+              </Form.Item>
             </>
           )}
 
@@ -149,7 +207,7 @@ const Login = () => {
         <Input
           placeholder="Digite seu email"
           value={recoveryEmail}
-          onChange={e => setRecoveryEmail(e.target.value)}
+          onChange={(e) => setRecoveryEmail(e.target.value)}
         />
       </Modal>
     </div>
