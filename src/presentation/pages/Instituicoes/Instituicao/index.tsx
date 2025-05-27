@@ -55,8 +55,16 @@ const InstituicaoPage = () => {
   const handleWalletDonate = async () => {
     if (!instituicao) return;
 
+    const stored = localStorage.getItem("conexaoSolidariaUser");
+    if (!stored) {
+      await Swal.fire("Erro", "Você precisa estar logado.", "error");
+      return navigate("/login");
+    }
+    const user = JSON.parse(stored) as { id_usuario: number; saldo: number };
+
     const result = await Swal.fire<string>({
       title: `Doar para ${instituicao.nome}`,
+      html: `<p>Saldo disponível: <strong>R$ ${user.saldo.toFixed(2)}</strong></p>`,
       input: "number",
       inputLabel: "Quanto você quer doar (R$)?",
       inputAttributes: { min: "1", step: "0.01" },
@@ -76,13 +84,6 @@ const InstituicaoPage = () => {
     }
 
     const valor = Number(result.value);
-
-    const stored = localStorage.getItem("conexaoSolidariaUser");
-    if (!stored) {
-      await Swal.fire("Erro", "Você precisa estar logado.", "error");
-      return navigate("/login");
-    }
-    const user = JSON.parse(stored) as { id_usuario: number; saldo: number };
 
     if (user.saldo < valor) {
       return Swal.fire(
